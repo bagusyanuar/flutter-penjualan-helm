@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -18,6 +19,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _initSplash() async {
+    final Map<String, Object> values = <String, Object>{'token': ''};
+    // ignore: invalid_use_of_visible_for_testing_member
+    SharedPreferences.setMockInitialValues(values);
     await Future.delayed(const Duration(seconds: 2));
     // ignore: use_build_context_synchronously
     Navigator.popAndPushNamed(context, "/login");

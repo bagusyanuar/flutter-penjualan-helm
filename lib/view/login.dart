@@ -4,9 +4,10 @@ import 'package:app_sadean_helm/components/button/button-loading.dart';
 import 'package:app_sadean_helm/components/images/logo.dart';
 import 'package:app_sadean_helm/components/textfield/icon-passwordfield.dart';
 import 'package:app_sadean_helm/components/textfield/icon-textfield.dart';
+import 'package:app_sadean_helm/controller/login.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -19,6 +20,41 @@ class _LoginPageState extends State<LoginPage> {
   String username = '';
   String password = '';
   bool onLoading = false;
+
+  void _eventLogin() async {
+    Map<String, String> data = {
+      "username": username,
+      "password": password,
+    };
+    setState(() {
+      onLoading = true;
+    });
+    LoginResponse loginResponse = await loginHandler(data);
+    setState(() {
+      onLoading = false;
+    });
+    if (!loginResponse.error) {
+      log("show toast");
+      try {
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        preferences.setString("token", loginResponse.accessToken);
+      } catch (e) {
+        log(e.toString());
+      }
+      Navigator.pushNamedAndRemoveUntil(
+          context, "/home", ModalRoute.withName("/dashboard"));
+    } else {
+      Fluttertoast.showToast(
+        msg: loginResponse.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +76,11 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: TextfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        username = value;
+                      });
                     },
                     icon: Icons.account_circle_outlined,
                     placeholder: "username",
@@ -50,8 +89,11 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 20),
                   child: PasswordfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        password = value;
+                      });
                     },
                     icon: Icons.lock_outline,
                     placeholder: "password",
@@ -102,18 +144,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-
-  void _eventLogin() async {
-    setState(() {
-      onLoading = true;
-    });
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-      onLoading = false;
-    });
-    // ignore: use_build_context_synchronously
-    Navigator.pushNamedAndRemoveUntil(
-        context, "/home", ModalRoute.withName("/home"));
   }
 }

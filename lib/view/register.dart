@@ -4,9 +4,10 @@ import 'package:app_sadean_helm/components/button/button-loading.dart';
 import 'package:app_sadean_helm/components/images/logo.dart';
 import 'package:app_sadean_helm/components/textfield/icon-passwordfield.dart';
 import 'package:app_sadean_helm/components/textfield/icon-textfield.dart';
+import 'package:app_sadean_helm/controller/register.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -18,7 +19,46 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   String username = '';
   String password = '';
+  String phone = '';
+  String name = '';
   bool onLoading = false;
+
+  void _eventRegister() async {
+    Map<String, String> data = {
+      "username": username,
+      "password": password,
+      "phone": phone,
+      "name": name,
+    };
+    setState(() {
+      onLoading = true;
+    });
+    RegisterResponse registerResponse = await registerHandler(data);
+    setState(() {
+      onLoading = false;
+    });
+    if (!registerResponse.error) {
+      log("show toast");
+      try {
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        preferences.setString("token", registerResponse.accessToken);
+      } catch (e) {
+        log(e.toString());
+      }
+      Navigator.pushNamedAndRemoveUntil(
+          context, "/home", ModalRoute.withName("/dashboard"));
+    } else {
+      Fluttertoast.showToast(
+        msg: registerResponse.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +80,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: TextfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        username = value;
+                      });
                     },
                     icon: Icons.account_circle_outlined,
                     placeholder: "username",
@@ -50,8 +93,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: PasswordfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        password = value;
+                      });
                     },
                     icon: Icons.lock_outline,
                     placeholder: "password",
@@ -60,8 +106,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: TextfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        name = value;
+                      });
                     },
                     icon: Icons.perm_identity_outlined,
                     placeholder: "nama lengkap",
@@ -70,8 +119,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 20),
                   child: TextfieldIcon(
-                    onChanged: (params) {
-                      log(params);
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        phone = value;
+                      });
                     },
                     icon: Icons.phone_android_outlined,
                     placeholder: "nomor handphone",
@@ -83,9 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     text: "Register",
                     onLoading: onLoading,
                     onTap: () {
-                      setState(() {
-                        onLoading = true;
-                      });
+                      _eventRegister();
                     },
                   ),
                 ),

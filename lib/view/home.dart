@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:app_sadean_helm/components/chip/chip-category.dart';
 import 'package:app_sadean_helm/components/navbar/top-navbar.dart';
 import 'package:app_sadean_helm/components/wrapper/product.dart';
 import 'package:app_sadean_helm/controller/category.dart';
+import 'package:app_sadean_helm/controller/product.dart';
 import 'package:app_sadean_helm/model/category.dart';
 import 'package:app_sadean_helm/model/product.dart';
 import 'package:app_sadean_helm/sample/data.dart';
@@ -31,14 +34,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _initPage() async {
+    setState(() {
+      isCategoriesLoading = true;
+    });
     CategoryResponse categoryResponse = await fetchCategoryList();
     if (!categoryResponse.error) {
       Category selectedCategory = categoryResponse.data.first;
       setState(() {
         categories = categoryResponse.data;
+        isCategoriesLoading = false;
       });
+
+      ProductResponse productResponse =
+          await fetchProductList(selectedCategory.id);
+      if (!productResponse.error) {
+        setState(() {
+          products = productResponse.data;
+          isProductsLoading = false;
+        });
+      }
     }
   }
+
+  void _showModalProduct(BuildContext rootContext, int id) {}
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +88,11 @@ class _HomePageState extends State<HomePage> {
                         data: categories,
                         selectedChip: selectedChipCategories,
                         onLoading: isCategoriesLoading,
-                        onChipChange: (key, id) {},
+                        onChipChange: (key, id) {
+                          setState(() {
+                            selectedChipCategories = key;
+                          });
+                        },
                       ),
                       Expanded(
                         child: LayoutBuilder(
