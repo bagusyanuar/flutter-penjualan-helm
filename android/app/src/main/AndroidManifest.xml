@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.app_sadean_helm">
    <application
+        tools:replace="label"
         android:label="app_sadean_helm"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:app_sadean_helm/components/chip/chip-category.dart';
+import 'package:app_sadean_helm/components/modal/product.dart';
 import 'package:app_sadean_helm/components/navbar/top-navbar.dart';
 import 'package:app_sadean_helm/components/wrapper/product.dart';
 import 'package:app_sadean_helm/controller/category.dart';
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   void _initPage() async {
     setState(() {
       isCategoriesLoading = true;
+      isProductsLoading = true;
     });
     CategoryResponse categoryResponse = await fetchCategoryList();
     if (!categoryResponse.error) {
@@ -56,7 +58,42 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showModalProduct(BuildContext rootContext, int id) {}
+  void _eventGetProductsByCategoryID(int key, int categoryID) async {
+    setState(() {
+      selectedChipCategories = key;
+      isProductsLoading = true;
+    });
+    ProductResponse productResponse = await fetchProductList(categoryID);
+    if (!productResponse.error) {
+      setState(() {
+        products = productResponse.data;
+        isProductsLoading = false;
+      });
+    }
+  }
+
+  void _showModalProduct(BuildContext rootContext, int id) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(15),
+          topLeft: Radius.circular(15),
+        ),
+      ),
+      builder: (builder) {
+        return ModalProduct(
+          id: id,
+          onCartChanged: (count) {},
+          onGoToCart: () {
+            Navigator.pushNamed(rootContext, "/cart")
+                .then((value) => Navigator.pop(context));
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +126,7 @@ class _HomePageState extends State<HomePage> {
                         selectedChip: selectedChipCategories,
                         onLoading: isCategoriesLoading,
                         onChipChange: (key, id) {
-                          setState(() {
-                            selectedChipCategories = key;
-                          });
+                          _eventGetProductsByCategoryID(key, id);
                         },
                       ),
                       Expanded(
@@ -104,7 +139,9 @@ class _HomePageState extends State<HomePage> {
                               onRefresh: () async {
                                 _initPage();
                               },
-                              onCardTap: (product) {},
+                              onCardTap: (product) {
+                                _showModalProduct(context, product.id);
+                              },
                               height: height,
                             );
                           },

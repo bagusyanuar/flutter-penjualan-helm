@@ -55,7 +55,7 @@ Future<ProductResponse> fetchProductList(int categoryID) async {
       message: "success",
       data: data,
     );
-  } catch (e) {
+  } on DioException catch (e) {
     productResponse = ProductResponse(
       error: true,
       message: "internal server error",
@@ -63,4 +63,40 @@ Future<ProductResponse> fetchProductList(int categoryID) async {
     );
   }
   return productResponse;
+}
+
+Future<ProductByIDResponse> fetchProductByID(int id) async {
+  ProductByIDResponse responseProductByID = ProductByIDResponse(
+    error: true,
+    message: "internal server error",
+  );
+  try {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final String? token = preferences.getString("token");
+    final response = await Dio().get("$hostApiAddress/product/$id",
+        options: Options(
+          headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer $token"
+          },
+        ));
+    log(response.data.toString());
+    dynamic productData = response.data['data'] as dynamic;
+    log(productData.toString());
+    Product? resultProduct;
+    if (productData != null) {
+      resultProduct = Product.fromJson(productData);
+    }
+    responseProductByID = ProductByIDResponse(
+      error: false,
+      message: "success",
+      data: resultProduct,
+    );
+  } on DioException catch (e) {
+    responseProductByID = ProductByIDResponse(
+      error: true,
+      message: "internal server error",
+    );
+  }
+  return responseProductByID;
 }
