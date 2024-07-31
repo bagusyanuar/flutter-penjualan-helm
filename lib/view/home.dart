@@ -1,9 +1,11 @@
 import 'dart:developer';
 
 import 'package:app_sadean_helm/components/chip/chip-category.dart';
+import 'package:app_sadean_helm/components/dialog/confirmation.dart';
 import 'package:app_sadean_helm/components/modal/product.dart';
 import 'package:app_sadean_helm/components/navbar/top-navbar.dart';
 import 'package:app_sadean_helm/components/wrapper/product.dart';
+import 'package:app_sadean_helm/controller/cart.dart';
 import 'package:app_sadean_helm/controller/category.dart';
 import 'package:app_sadean_helm/controller/product.dart';
 import 'package:app_sadean_helm/model/category.dart';
@@ -26,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   int selectedChipCategories = 0;
   bool isCategoriesLoading = true;
   bool isProductsLoading = true;
+  bool isLoadingCart = false;
 
   @override
   void initState() {
@@ -72,6 +75,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _eventAddToCart(
+      Product product, int qty, BuildContext modalContext) async {
+    Map<String, dynamic> data = {
+      "product_id": product.id,
+      "qty": qty,
+    };
+    CartResponse cartResponse = await addToCartHandler(data);
+    if (!cartResponse.error) {
+      log(cartResponse.message);
+    }
+    // ignore: use_build_context_synchronously
+    Navigator.pop(modalContext);
+    log(data.toString());
+    // CartResponse cartResponse = await addToCartHandler(data);
+  }
+
   void _showModalProduct(BuildContext rootContext, int id) {
     showModalBottomSheet(
       context: context,
@@ -86,9 +105,29 @@ class _HomePageState extends State<HomePage> {
         return ModalProduct(
           id: id,
           onCartChanged: (count) {},
-          onGoToCart: () {
-            Navigator.pushNamed(rootContext, "/cart")
-                .then((value) => Navigator.pop(context));
+          onLoadingCart: isLoadingCart,
+          onAddToCart: (product, qty) {
+            _eventConfirmAddToCart(context, context, product, qty);
+          },
+        );
+      },
+    );
+  }
+
+  void _eventConfirmAddToCart(BuildContext rootContext,
+      BuildContext modalContext, Product product, int qty) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DialogConfirmation(
+          title: 'Confirmation',
+          content: 'Apakah Anda Yakin Ingin Menambah Keranjang?',
+          onYesTap: () {
+            Navigator.pop(context);
+            _eventAddToCart(product, qty, modalContext);
+          },
+          onNoTap: () {
+            Navigator.pop(context);
           },
         );
       },
