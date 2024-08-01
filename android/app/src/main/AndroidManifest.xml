@@ -5,6 +5,7 @@
         tools:replace="label"
         android:label="app_sadean_helm"
         android:name="${applicationName}"
+        android:theme="@style/AppTheme"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,5 +1,7 @@
+import 'package:app_sadean_helm/view/cart.dart';
 import 'package:app_sadean_helm/view/home.dart';
 import 'package:app_sadean_helm/view/login.dart';
+import 'package:app_sadean_helm/view/payment.dart';
 import 'package:app_sadean_helm/view/register.dart';
 import 'package:app_sadean_helm/view/splash.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
+        '/cart': (context) => const CartPage(),
+        '/payment': (context) => const PaymentPage(),
       },
     );
   }
