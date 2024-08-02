@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:app_sadean_helm/components/button/button.floating.cart.dart';
 import 'package:app_sadean_helm/components/chip/chip-category.dart';
 import 'package:app_sadean_helm/components/dialog/confirmation.dart';
 import 'package:app_sadean_helm/components/modal/product.dart';
@@ -14,6 +15,7 @@ import 'package:app_sadean_helm/sample/data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -81,14 +83,37 @@ class _HomePageState extends State<HomePage> {
       "product_id": product.id,
       "qty": qty,
     };
+    setState(() {
+      isLoadingCart = true;
+    });
+    Navigator.pop(modalContext);
     CartResponse cartResponse = await addToCartHandler(data);
+    setState(() {
+      isLoadingCart = false;
+    });
     if (!cartResponse.error) {
       log(cartResponse.message);
+      Fluttertoast.showToast(
+        msg: "Berhasil Menambahkan Keranjang",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: cartResponse.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
-    // ignore: use_build_context_synchronously
-    Navigator.pop(modalContext);
     log(data.toString());
-    // CartResponse cartResponse = await addToCartHandler(data);
   }
 
   void _showModalProduct(BuildContext rootContext, int id) {
@@ -137,62 +162,126 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            children: [
-              const TopNavbar(
-                height: 70,
-                backgroundColor: Colors.white,
-                color: Colors.black,
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                children: [
+                  const TopNavbar(
+                    height: 70,
+                    backgroundColor: Colors.white,
+                    color: Colors.black,
                   ),
-                  height: double.infinity,
-                  width: double.infinity,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ChipCategory(
-                        data: categories,
-                        selectedChip: selectedChipCategories,
-                        onLoading: isCategoriesLoading,
-                        onChipChange: (key, id) {
-                          _eventGetProductsByCategoryID(key, id);
-                        },
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
                       ),
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            double height = constraints.maxHeight;
-                            return ProductWrapper(
-                              data: products,
-                              onLoading: isProductsLoading,
-                              onRefresh: () async {
-                                _initPage();
+                      height: double.infinity,
+                      width: double.infinity,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ChipCategory(
+                            data: categories,
+                            selectedChip: selectedChipCategories,
+                            onLoading: isCategoriesLoading,
+                            onChipChange: (key, id) {
+                              _eventGetProductsByCategoryID(key, id);
+                            },
+                          ),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                double height = constraints.maxHeight;
+                                return ProductWrapper(
+                                  data: products,
+                                  onLoading: isProductsLoading,
+                                  onRefresh: () async {
+                                    _initPage();
+                                  },
+                                  onCardTap: (product) {
+                                    _showModalProduct(context, product.id);
+                                  },
+                                  height: height,
+                                );
                               },
-                              onCardTap: (product) {
-                                _showModalProduct(context, product.id);
-                              },
-                              height: height,
-                            );
-                          },
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
-        ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: isProductsLoading
+                  ? Container()
+                  : ButtonFloatingCart(
+                      qty: 0,
+                      onTapCart: () {
+                        Navigator.pushNamed(context, '/cart');
+                      },
+                    ),
+            ),
+          ),
+          Visibility(
+            visible: isLoadingCart,
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              color: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 20,
+                    width: 20,
+                    margin: const EdgeInsets.only(right: 5),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.brown,
+                    ),
+                  ),
+                  const Text(
+                    "loading...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.brown,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: ((value) {
+          if (value == 1) {
+            Navigator.pushNamed(context, "/history");
+          } else if (value == 2) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, "/login", ModalRoute.withName("/login"));
+          }
+        }),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Riwayat"),
+          BottomNavigationBarItem(icon: Icon(Icons.logout), label: "Logout"),
+        ],
+        currentIndex: 0,
       ),
     );
   }

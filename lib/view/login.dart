@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         log(e.toString());
       }
       Navigator.pushNamedAndRemoveUntil(
-          context, "/cart", ModalRoute.withName("/cart"));
+          context, "/home", ModalRoute.withName("/home"));
     } else {
       Fluttertoast.showToast(
         msg: loginResponse.message,
