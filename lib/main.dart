@@ -1,5 +1,6 @@
 import 'package:app_sadean_helm/view/cart.dart';
 import 'package:app_sadean_helm/view/history.dart';
+import 'package:app_sadean_helm/view/history.detail.dart';
 import 'package:app_sadean_helm/view/home.dart';
 import 'package:app_sadean_helm/view/login.dart';
 import 'package:app_sadean_helm/view/payment.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/shipping': (context) => const ShippingPage(),
         '/payment': (context) => const PaymentPage(),
         '/history': (context) => const HistoryPage(),
+        '/history-detail': (context) => const HistoryDetailPage(),
       },
     );
   }

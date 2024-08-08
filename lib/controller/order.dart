@@ -27,6 +27,18 @@ class OrderListResponse {
   });
 }
 
+class OrderByIDResponse {
+  bool error;
+  String message;
+  OrderDetail? data;
+
+  OrderByIDResponse({
+    required this.error,
+    required this.message,
+    required this.data,
+  });
+}
+
 Future<OrderSuccessResponse> orderSuccessHandler(String id) async {
   OrderSuccessResponse orderSuccessResponse = OrderSuccessResponse(
     error: true,
@@ -93,4 +105,35 @@ Future<OrderListResponse> getOrderListHandler() async {
     );
   }
   return orderListResponse;
+}
+
+Future<OrderByIDResponse> getOrderByID(int id) async {
+  OrderByIDResponse orderByIDResponse = OrderByIDResponse(
+      error: true, message: "internal server error", data: null);
+  try {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final String? token = preferences.getString("token");
+    final response = await Dio().get(
+      "$hostApiAddress/order/9",
+      options: Options(
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $token"
+        },
+      ),
+    );
+    log(response.data.toString());
+    dynamic dataOrder = response.data['data'] as dynamic;
+
+    if (dataOrder != null) {
+      OrderDetail tmpDataOrder = OrderDetail.fromJson(dataOrder);
+      orderByIDResponse = OrderByIDResponse(
+          error: false, message: "success", data: tmpDataOrder);
+    }
+    log(response.data.toString());
+  } on DioException catch (e) {
+    orderByIDResponse = OrderByIDResponse(
+        error: true, message: "internal server error", data: null);
+  }
+  return orderByIDResponse;
 }

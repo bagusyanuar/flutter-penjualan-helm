@@ -92,7 +92,9 @@ class _HistoryPageState extends State<HistoryPage> {
                                   onLoading: isLoading,
                                   orders: dataOrder,
                                   onOrderTap: (id) {
-                                    log(id.toString());
+                                    Navigator.pushNamed(
+                                        context, "/history-detail",
+                                        arguments: id);
                                   },
                                 ),
                               ),
