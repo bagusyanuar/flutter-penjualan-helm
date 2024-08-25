@@ -116,10 +116,10 @@ class _ModalProductState extends State<ModalProduct> {
                 textEditingController: textEditingController,
                 onQtyChange: (qtyString) {
                   textEditingController.text = qtyString;
-                  int value = int.parse(qtyString);
-                  setState(() {
-                    qty = value;
-                  });
+                  // int value = int.parse(qtyString);
+                  // setState(() {
+                  //   qty = value;
+                  // });
                   // _onQtyChange(product, qty);
                 },
               ),
@@ -134,7 +134,8 @@ class _ModalProductState extends State<ModalProduct> {
                     )
                   : GestureDetector(
                       onTap: () {
-                        widget.onAddToCart(product, qty);
+                        int qtyValue = int.parse(textEditingController.text);
+                        widget.onAddToCart(product, qtyValue);
                       },
                       child: Container(
                         height: 50,

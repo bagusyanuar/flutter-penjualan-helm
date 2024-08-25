@@ -30,7 +30,7 @@ class ProductByIDResponse {
   });
 }
 
-Future<ProductResponse> fetchProductList(int categoryID) async {
+Future<ProductResponse> fetchProductList(int categoryID, String name) async {
   ProductResponse productResponse = ProductResponse(
     error: true,
     message: "internal server error",
@@ -39,8 +39,8 @@ Future<ProductResponse> fetchProductList(int categoryID) async {
   try {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     final String? token = preferences.getString("token");
-    final response =
-        await Dio().get("$hostApiAddress/category/$categoryID/product",
+    final response = await Dio()
+        .get("$hostApiAddress/category/$categoryID/product?param=$name",
             options: Options(
               headers: {
                 "Accept": "application/json",

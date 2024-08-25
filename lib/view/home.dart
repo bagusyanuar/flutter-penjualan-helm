@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:app_sadean_helm/components/button/button.floating.cart.dart';
@@ -5,6 +6,7 @@ import 'package:app_sadean_helm/components/chip/chip-category.dart';
 import 'package:app_sadean_helm/components/dialog/confirmation.dart';
 import 'package:app_sadean_helm/components/modal/product.dart';
 import 'package:app_sadean_helm/components/navbar/top-navbar.dart';
+import 'package:app_sadean_helm/components/textfield/icon-textfield.dart';
 import 'package:app_sadean_helm/components/wrapper/product.dart';
 import 'package:app_sadean_helm/controller/cart.dart';
 import 'package:app_sadean_helm/controller/category.dart';
@@ -28,15 +30,42 @@ class _HomePageState extends State<HomePage> {
   List<Category> categories = [];
   List<Product> products = [];
   int selectedChipCategories = 0;
+  int catID = 0;
   bool isCategoriesLoading = true;
   bool isProductsLoading = true;
   bool isLoadingCart = false;
+  String param = "";
+  Timer? _debounce;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _initPage();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 1000), () async {
+      // do something with query
+      setState(() {
+        isProductsLoading = true;
+      });
+      ProductResponse productResponse = await fetchProductList(catID, param);
+      if (!productResponse.error) {
+        setState(() {
+          products = productResponse.data;
+          isProductsLoading = false;
+        });
+      }
+    });
   }
 
   void _initPage() async {
@@ -50,10 +79,11 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         categories = categoryResponse.data;
         isCategoriesLoading = false;
+        catID = selectedCategory.id;
       });
 
       ProductResponse productResponse =
-          await fetchProductList(selectedCategory.id);
+          await fetchProductList(selectedCategory.id, param);
       if (!productResponse.error) {
         setState(() {
           products = productResponse.data;
@@ -68,7 +98,7 @@ class _HomePageState extends State<HomePage> {
       selectedChipCategories = key;
       isProductsLoading = true;
     });
-    ProductResponse productResponse = await fetchProductList(categoryID);
+    ProductResponse productResponse = await fetchProductList(categoryID, param);
     if (!productResponse.error) {
       setState(() {
         products = productResponse.data;
@@ -192,8 +222,22 @@ class _HomePageState extends State<HomePage> {
                             selectedChip: selectedChipCategories,
                             onLoading: isCategoriesLoading,
                             onChipChange: (key, id) {
+                              setState(() {
+                                catID = id;
+                              });
                               _eventGetProductsByCategoryID(key, id);
                             },
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 5),
+                            child: TextfieldIcon(
+                              onChanged: (value) {
+                                log(value);
+                                _onSearchChanged(value);
+                              },
+                              icon: Icons.search,
+                              placeholder: "nama",
+                            ),
                           ),
                           Expanded(
                             child: LayoutBuilder(

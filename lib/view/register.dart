@@ -21,6 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String password = '';
   String phone = '';
   String name = '';
+  String address = '';
   bool onLoading = false;
 
   void _eventRegister() async {
@@ -29,6 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
       "password": password,
       "phone": phone,
       "name": name,
+      "address": address,
     };
     setState(() {
       onLoading = true;
@@ -114,6 +116,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     icon: Icons.perm_identity_outlined,
                     placeholder: "nama lengkap",
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: TextfieldIcon(
+                    onChanged: (value) {
+                      log(value);
+                      setState(() {
+                        address = value;
+                      });
+                    },
+                    icon: Icons.home,
+                    placeholder: "alamat",
                   ),
                 ),
                 Container(
